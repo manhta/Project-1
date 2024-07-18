@@ -60,7 +60,7 @@ def CalibrateData(depthmap, boundingbox):
 def Normalize(img):
     gray_img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     normalized_gray_image = cv.normalize(gray_img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
-    img = cv.cvtColor(normalized_gray_image, cv.COLOR_GRAY2BGR)
+    img = cv.cvtColor(normalized_gray_image, cv.COLOR_GRAY2RGB)
     return img
 
 def DepthMap(img):
@@ -96,7 +96,7 @@ def main():
         temp.append([filename[-8:-6], calibrated_data])
     
     temp = pd.DataFrame(temp, columns=['Ground truth', 'Predicted depth'])
-    pd.DataFrame.to_csv(temp, 'result2.csv', index=False)
+    pd.DataFrame.to_csv(temp, 'result3.csv', index=False)
 
 
 if __name__ == '__main__':
