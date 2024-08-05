@@ -14,7 +14,7 @@ dpt.eval()
 transforms = torch.hub.load('intel-isl/MiDaS', 'transforms')
 transform = transforms.dpt_transform
 
-img_path = ''
+img_path = 'data/images/depth_train/40cm.png'
 img = cv.imread(img_path)
 
 img_batch = transform(img).to(device)
@@ -29,3 +29,5 @@ with torch.no_grad():
     ).squeeze()
 
 output = prediction.cpu().numpy()
+
+print(1/(output))

@@ -8,8 +8,6 @@ device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 yolo = YOLO('model/yolov8l-face.pt')
 yolo.to(device)
 
-os.chdir(os.chdir('data/images/depth_train'))
-
 
 def FaceDetector(img):
     global yolo
@@ -58,7 +56,7 @@ if __name__ == '__main__':
 
         if ret:
             frame = cv.flip(frame, 1)
-
+            h,w = frame.shape[:2]
             results = yolo.predict(frame, conf=0.8)
 
             if len(results)>0:
@@ -68,10 +66,12 @@ if __name__ == '__main__':
                     pt1 = (int(box[0]), int(box[1]))
                     pt2 = (int(box[2]), int(box[3]))
                     pixel_width = pt2[0] - pt1[0]
+                    pixel_height = pt2[1] - pt1[1]
                     distance = DistanceEstimation(focal_length, known_width, pixel_width)
                     cv.rectangle(frame, pt1, pt2, (0,255,0), 1)
-                    cv.putText(frame, f'Distance estimated: {distance} cm', (pt1[0], pt1[1]-10), cv.FONT_HERSHEY_COMPLEX, 0.5, (0,255,0), 1)
-
+                    cv.putText(frame, f'Distance estimated: {distance} cm', (10, 20), cv.FONT_HERSHEY_COMPLEX, 0.5, (0,255,0), 1)
+                    if pixel_height == h:
+                        print(distance)
             cv.imshow('frame', frame)
             key = cv.waitKey(1)
             if key == ord('q'):
