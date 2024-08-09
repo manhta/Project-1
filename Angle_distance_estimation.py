@@ -5,7 +5,7 @@ import cv2 as cv
 import os
 
 def DistanceEstimation2(point: tuple):
-    beta, alpha, gamma = np.radians(45), np.radians(17.5), np.radians(10.4)
+    beta, alpha, gamma = np.radians(45), np.radians(17.5), np.radians(28.8)
     h = 1
     m,n = 640, 480
     u,v = point
