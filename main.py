@@ -36,7 +36,7 @@ t = np.around(t, decimals=3)
 
 R_inv = np.around(np.linalg.inv(R), decimals=3)  # Inverse rotation matrix
 
-def InverseProjection(point_pixel: tuple):
+def InverseProjection(point_pixel: tuple) -> tuple:
     global R, R_inv, t
     global u0, v0
     global fx, fy
@@ -59,7 +59,7 @@ def InverseProjection(point_pixel: tuple):
     temp = Xw.reshape(1,-1)[0]
     return Xw
 
-def DistanceEstimation(point_pixel: tuple):
+def DistanceEstimation(point_pixel: tuple) -> float:
     point = InverseProjection(point_pixel)
 
     x = point[0][0]
