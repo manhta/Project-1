@@ -4,22 +4,19 @@
 
 import cv2 as cv
 import numpy as np
-import os
-import torch
-import pandas as pd
 from ultralytics import YOLO
-
-torch.cuda.set_device(0)
 
 yolo = YOLO('model/yolov8x.pt')
 
-fx = 582                       # x-axis focal length in pixels
-fy = 764                       # y-axis focal length in pixels  
+#Default parameters
+fx = 659.68                    # x-axis focal length in pixels
+fy = 648.23                    # y-axis focal length in pixels  
+
 m,n = 640, 480                 # Image resolution
 P = (320, 240)                 # Principal point
 u0, v0 = P
 
-phi, omega, kappa = np.radians(-27.5), np.radians(0), np.radians(0)        # Rotation angles in radian
+phi, omega, kappa = np.radians(-42.81), np.radians(0), np.radians(0)        # Rotation angles in radian
 
 R = np.array([                                   # Rotation matrix
     [1,0,0], 
@@ -28,7 +25,7 @@ R = np.array([                                   # Rotation matrix
 ]).reshape(3,3)
 R = np.around(R, decimals=3)
 
-h = 1                                            # Camera height (m) 
+h = 0.94                                         # Camera height (m) 
 C = np.array([0, h, 0]).reshape(-1,1)            # Camera in world coordinate 
 
 t = -np.dot(R, C).reshape(-1,1)                  # Translation matrix
@@ -45,13 +42,12 @@ def InverseProjection(point_pixel: tuple) -> tuple:
     v = point_pixel[1]
     v = 2*v0 - v
 
-    r12 = R[1][2]
     r21 = R[2][1]
-    r22 = R[2][2]
+    r11 = R[1][1]
     ty = t[1][0]
     tz = t[2][0]
 
-    z_c = round((ty*r22+tz*r21)/(((v-v0)*r22)/fy + r21),3)
+    z_c = round((ty*r11+tz*r21)/(((v-v0)*r11)/fy + r21),3)
     x_c = round(((u-u0)/fx) * z_c, 3)
     y_c = round(((v-v0)/fy) * z_c, 3)
     Xc = np.array([x_c, y_c, z_c]).reshape(-1,1)
@@ -72,43 +68,39 @@ def DistanceEstimation(point_pixel: tuple) -> float:
 def main():
     global yolo
 
-    # cam = cv.VideoCapture(0)
+    cam = cv.VideoCapture(0)
 
-    # while True:
-    #     ret, frame = cam.read()
+    while True:
+        ret, frame = cam.read()
 
-    #     if ret:
-    #         frame = cv.flip(frame, 1)
+        if ret:
+            frame = cv.flip(frame, 1)
 
-    #         results = yolo.predict(frame, conf=0.7)
+            results = yolo.predict(frame, conf=0.7)
 
-    #         if len(results)>0:
-    #             boxes = results[0].boxes.xyxy.tolist()
+            if len(results)>0:
+                boxes = results[0].boxes.xyxy.tolist()
 
-    #             for box in boxes:
-    #                 pt1 = (int(box[0]), int(box[1]))
-    #                 pt2 = (int(box[2]), int(box[3]))
+                for box in boxes:
+                    pt1 = (int(box[0]), int(box[1]))
+                    pt2 = (int(box[2]), int(box[3]))
 
-    #                 cv.rectangle(frame, pt1, pt2, (0,255,0), 1)
+                    cv.rectangle(frame, pt1, pt2, (0,255,0), 1)
 
-    #                 point = (int((pt1[0]+pt2[0])/2), pt2[1])
-    #                 pred_dis = DistanceEstimation(point_pixel=point)
-    #                 cv.putText(frame, f'Pred dis: {pred_dis} (m)', (pt1[0],pt1[1]-10), cv.FONT_HERSHEY_COMPLEX, 1, (0,255,0), 1)
+                    point = (int((pt1[0]+pt2[0])/2), pt2[1])
+                    pred_dis = DistanceEstimation(point_pixel=point)
+                    cv.putText(frame, f'Pred dis: {pred_dis} (m)', (pt1[0],pt1[1]-10), cv.FONT_HERSHEY_COMPLEX, 1, (0,255,0), 1)
 
-    #         cv.imshow('frame', frame)
+            cv.imshow('frame', frame)
 
-    #         key = cv.waitKey(1)
-    #         if key == ord('q'):
-    #             break
-    #     else:
-    #         break
+            key = cv.waitKey(1)
+            if key == ord('q'):
+                break
+        else:
+            break
 
-    # cam.release()
-    # cv.destroyAllWindows()
-
-    global R, R_inv
-    print(R)
-    print(R_inv)
+    cam.release()
+    cv.destroyAllWindows()
 
 if __name__ == '__main__':
     main()
